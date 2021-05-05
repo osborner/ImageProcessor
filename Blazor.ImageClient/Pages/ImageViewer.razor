@@ -15,7 +15,7 @@
          @onpointerdown=PointerDown @onpointerdown:preventDefault
          @onpointerup=PointerUp @onpointerup:preventDefault
          @onpointermove=PointerMove @onpointermove:preventDefault>
-        <rect x="@myRect.x" y="@myRect.y" width="@myRect.width" height="@myRect.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)" />
+        <rect x="@myRect.drawX" y="@myRect.drawY" width="@myRect.width" height="@myRect.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)" />
     </svg>
 }
 @code{
@@ -24,6 +24,8 @@
         public bool display { get; set; }
         public double x { get; set; }
         public double y { get; set; }
+        public double drawX { get; set; }
+        public double drawY { get; set; }
         public double width { get; set; }
         public double height { get; set; }
     }
@@ -46,6 +48,8 @@
         myRect.display = true;
         myRect.x = e.ClientX - imageOffsets.x;
         myRect.y = e.ClientY- imageOffsets.y;
+        myRect.drawX = myRect.x;
+        myRect.drawY = myRect.y;
         myRect.width = 2;
         myRect.height = 2;
         StateHasChanged();
@@ -65,8 +69,8 @@
             Debug.WriteLine($"ClientX/Y: {e.ClientX}/{e.ClientY} | myRectX/Y: {myRect.x}/{myRect.y} | imageOffsetsX/Y: {imageOffsets.x}/{imageOffsets.y}");
             myRect.width = e.ClientX > (myRect.x + imageOffsets.x) ? e.ClientX - myRect.x - imageOffsets.x : (myRect.x + imageOffsets.x) - e.ClientX;
             myRect.height = e.ClientY > (myRect.y + imageOffsets.y) ? e.ClientY - myRect.y - imageOffsets.y : (myRect.y + imageOffsets.y) - e.ClientY;
-            myRect.x = Math.Min(myRect.x, (e.ClientX - imageOffsets.x));
-            myRect.y = Math.Min(myRect.y, (e.ClientY - imageOffsets.y));
+            myRect.drawX = Math.Min(myRect.x, (e.ClientX - imageOffsets.x));
+            myRect.drawY = Math.Min(myRect.y, (e.ClientY - imageOffsets.y));
             StateHasChanged();
         }
         return Task.CompletedTask;
