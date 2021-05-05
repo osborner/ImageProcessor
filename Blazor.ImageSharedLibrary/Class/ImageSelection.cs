@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Blazor.ImageClient.Class
+namespace Blazor.ImageSharedLibrary.Class
 {
     public class ImageSelection
     {

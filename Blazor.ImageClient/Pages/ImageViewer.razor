@@ -1,9 +1,8 @@
 ﻿@page "/imageviewer"
 @inject IJSRuntime JSRuntime
-@inject IImageProcessor ImageProcessor
 @using System.Diagnostics
 @using Blazor.ImageClient.Interface
-@using Blazor.ImageClient.Class
+@using Blazor.ImageSharedLibrary.Class
 <h3>ImageViewer</h3>
 <table class="table">
     <tr>
@@ -28,7 +27,7 @@
         </td>
     </tr>
 </table>
-<img id="BaseImage" src="/sample-data/malaria.png"
+<img id="BaseImage" src="@imageDetails.FileName" width="@imageDetails.Width" height="@imageDetails.Height"
      @onpointerdown=PointerDown
      @onpointerdown:preventDefault
      @onpointerup=PointerUp @onpointerup:preventDefault
@@ -36,15 +35,18 @@
      style="position:absolute;z-index:1;" />
 @if (myRect.display)
 {
-    <svg width="960" height="960" style="position: absolute; z-index: 2;"
-         @onpointerdown=PointerDown @onpointerdown:preventDefault
-         @onpointerup=PointerUp @onpointerup:preventDefault
-         @onpointermove=PointerMove @onpointermove:preventDefault>
-        <rect x="@myRect.drawX" y="@myRect.drawY" width="@myRect.width" height="@myRect.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)" />
-    </svg>
+<svg width="@imageDetails.Width" height="@imageDetails.Height" style="position: absolute; z-index: 2;"
+     @onpointerdown=PointerDown @onpointerdown:preventDefault
+     @onpointerup=PointerUp @onpointerup:preventDefault
+     @onpointermove=PointerMove @onpointermove:preventDefault>
+    <rect x="@myRect.drawX" y="@myRect.drawY" width="@myRect.width" height="@myRect.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)" />
+</svg>
 }
 
 @code{
+    [Inject]
+    private IImageService imageService { get; set; }
+
     public class rect
     {
         public bool display { get; set; }
@@ -61,11 +63,14 @@
         public double y { get; set; }
     }
     private offsets imageOffsets { get; set; }
-
+    private ReturnImageDetails imageDetails { get; set; } = new ReturnImageDetails();
     rect myRect = new rect();
     bool mouseDown = false;
 
-    ElementReference BaseImage;
+    protected override async Task OnInitializedAsync()
+    {
+        imageDetails = await imageService.GetImageDetails("malaria.png");
+    }
 
     async Task PointerDown(PointerEventArgs e)
     {
@@ -106,12 +111,12 @@
     {
         var selection = new ImageSelection
         {
-            BaseImagePath = "/sample-data/malaria.png",
+            BaseImagePath = imageDetails.FileName,
             X = myRect.drawX,
             Y = myRect.drawY,
             Width = myRect.width,
             Height = myRect.height
         };
-        await ImageProcessor.SubmitSelection(selection);
+        await imageService.SubmitSelection(selection);
     }
 }

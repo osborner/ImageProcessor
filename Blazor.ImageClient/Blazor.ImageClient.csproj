@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Blazor.ImageSharedLibrary\Blazor.ImageSharedLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\sample-data\malaria.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

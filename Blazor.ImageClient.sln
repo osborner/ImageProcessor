@@ -5,7 +5,11 @@ VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.ImageClient", "Blazor.ImageClient\Blazor.ImageClient.csproj", "{C57D8BFB-A2D3-4343-808A-19386E5719F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ImageServer", "Blazor.ImageServer\Blazor.ImageServer.csproj", "{D6E43AAF-7F0D-473B-8DF6-C5097F135892}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.ImageServer", "Blazor.ImageServer\Blazor.ImageServer.csproj", "{D6E43AAF-7F0D-473B-8DF6-C5097F135892}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ImageSharedLibrary", "Blazor.ImageSharedLibrary\Blazor.ImageSharedLibrary.csproj", "{01F6904A-6F5E-49B4-96DF-1666FAD944EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ImageApi", "Blazor.ImageApi\Blazor.ImageApi.csproj", "{3929EE31-398D-4F22-9B48-11B68005EB20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{D6E43AAF-7F0D-473B-8DF6-C5097F135892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6E43AAF-7F0D-473B-8DF6-C5097F135892}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6E43AAF-7F0D-473B-8DF6-C5097F135892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01F6904A-6F5E-49B4-96DF-1666FAD944EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01F6904A-6F5E-49B4-96DF-1666FAD944EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01F6904A-6F5E-49B4-96DF-1666FAD944EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01F6904A-6F5E-49B4-96DF-1666FAD944EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3929EE31-398D-4F22-9B48-11B68005EB20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3929EE31-398D-4F22-9B48-11B68005EB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3929EE31-398D-4F22-9B48-11B68005EB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3929EE31-398D-4F22-9B48-11B68005EB20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

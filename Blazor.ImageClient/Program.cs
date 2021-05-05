@@ -1,5 +1,5 @@
-using Blazor.ImageClient.Class;
 using Blazor.ImageClient.Interface;
+using Blazor.ImageClient.Service;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,8 +19,8 @@ namespace Blazor.ImageClient
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddScoped<IImageProcessor, ImageProcessor>();
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44382") });
+            builder.Services.AddScoped<IImageService, ImageService>();
 
             await builder.Build().RunAsync();
         }
