@@ -2,8 +2,8 @@
 @inject IJSRuntime JSRuntime
 @inject IImageProcessor ImageProcessor
 @using System.Diagnostics
-@using Blazor.ImageClient.Interface
-@using Blazor.ImageClient.Class
+@using Blazor.ImageServer.Interface
+@using Blazor.ImageServer.Class
 <h3>ImageViewer</h3>
 <table class="table">
     <tr>
@@ -106,7 +106,7 @@
     {
         var selection = new ImageSelection
         {
-            BaseImagePath = "/sample-data/malaria.png",
+            BaseImagePath = "wwwroot/sample-data/malaria.png",
             X = myRect.drawX,
             Y = myRect.drawY,
             Width = myRect.width,
