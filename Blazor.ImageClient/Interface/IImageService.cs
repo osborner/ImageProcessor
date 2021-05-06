@@ -9,6 +9,6 @@ namespace Blazor.ImageClient.Interface
     public interface IImageService
     {
         Task<ReturnImageDetails> GetImageDetails(string filename);
-        Task<ReturnImageDetails> SubmitSelection(ImageSelection selection);
+        Task<AnalysisResult[]> SubmitSelection(ImageSelection selection);
     }
 }

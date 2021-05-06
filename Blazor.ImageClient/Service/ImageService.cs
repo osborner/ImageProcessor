@@ -22,10 +22,10 @@ namespace Blazor.ImageClient.Service
             return await httpClient.GetFromJsonAsync<ReturnImageDetails>($"api/imageservice?imagename={filename}");
         }
 
-        public async Task<ReturnImageDetails> SubmitSelection(ImageSelection selection)
+        public async Task<AnalysisResult[]> SubmitSelection(ImageSelection selection)
         {
             var response = await httpClient.PostAsJsonAsync($"api/imageservice", selection);
-            return await response.Content.ReadFromJsonAsync<ReturnImageDetails>();
+            return await response.Content.ReadFromJsonAsync<AnalysisResult[]>();
         }
     }
 }

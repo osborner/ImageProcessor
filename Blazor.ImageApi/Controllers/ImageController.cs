@@ -30,11 +30,11 @@ namespace Blazor.ImageApi.Controllers
         [HttpGet]
         public async Task<ReturnImageDetails> Get(string imageName)
         {
-            return await _processor.GetImagePath(imageName);
+            return await _processor.GetImageDetails(imageName);
         }
 
         [HttpPost]
-        public async Task<ReturnImageDetails> Post(ImageSelection selection)
+        public async Task<AnalysisResult[]> Post(ImageSelection selection)
         {
             return await _processor.SubmitSelection(selection);            
         }

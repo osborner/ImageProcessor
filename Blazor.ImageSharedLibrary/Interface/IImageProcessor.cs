@@ -8,7 +8,7 @@ namespace Blazor.ImageSharedLibrary.Interface
 {
     public interface IImageProcessor
     {
-        Task<ReturnImageDetails> SubmitSelection(ImageSelection selection);
-        Task<ReturnImageDetails> GetImagePath(string fileName);
+        Task<AnalysisResult[]> SubmitSelection(ImageSelection selection);
+        Task<ReturnImageDetails> GetImageDetails(string fileName);
     }
 }

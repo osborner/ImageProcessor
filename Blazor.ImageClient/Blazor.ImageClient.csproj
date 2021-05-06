@@ -21,9 +21,6 @@
     <Content Update="wwwroot\sample-data\malaria.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\scripts\getOffsets2.js">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Update="wwwroot\scripts\getOffsets.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

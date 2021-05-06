@@ -16,7 +16,13 @@ namespace Blazor.ImageApi.Service
     public class ImageProcessor : IImageProcessor
     {
         const string ImageDirectory = "sample-data";
-        public async Task<ReturnImageDetails> GetImagePath(string fileName)
+        private readonly IImageAnalyser _imageAnalyser;
+
+        public ImageProcessor(IImageAnalyser imageAnalyser)
+        {
+            _imageAnalyser = imageAnalyser;
+        }
+        public async Task<ReturnImageDetails> GetImageDetails(string fileName)
         {
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
@@ -26,7 +32,7 @@ namespace Blazor.ImageApi.Service
             {
                 Stream stream = client.OpenRead(new Uri(fileLocation));
                 image = Image.FromStream(stream);
-                if(image == null)
+                if (image == null)
                     throw new FileNotFoundException("Image not found.");
             }
 
@@ -40,14 +46,9 @@ namespace Blazor.ImageApi.Service
             };
         }
 
-        public async Task<ReturnImageDetails> SubmitSelection(ImageSelection selection)
+        public async Task<AnalysisResult[]> SubmitSelection(ImageSelection selection)
         {
             // Proof of concept - receives selection and extracts section of base image.
-
-            var stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
-            var assembly = Assembly.GetExecutingAssembly();
-            var directory = Path.GetDirectoryName(assembly.Location);
             Image image;
             using (WebClient client = new WebClient())
             {
@@ -63,18 +64,7 @@ namespace Blazor.ImageApi.Service
             selectedArea.DrawImage(baseBmp, 0, 0, cropRegion, GraphicsUnit.Pixel);
 
             // Result of DrawImage can be used in further processing/analysis
-
-            var newFileName = $"{DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss-fff")}.png";
-            outputBitmap.Save(Path.Combine(directory, "sample-data", newFileName), ImageFormat.Png);
-            stopwatch.Stop();
-
-            return new ReturnImageDetails
-            {
-                FileName = Path.Combine("https://localhost:44382/sample-data/", newFileName),
-                Width = outputBitmap.Width,
-                Height = outputBitmap.Height,
-                TimeToProcess = stopwatch.Elapsed
-            };
+            return await _imageAnalyser.Analyse(outputBitmap);
         }
     }
 }

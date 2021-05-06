@@ -1,4 +1,4 @@
-﻿@page "/imageviewer"
+﻿@page "/"
 @inject IJSRuntime JSRuntime
 @using System.Diagnostics
 @using Blazor.ImageClient.Interface
@@ -10,9 +10,7 @@
             <strong>Coords</strong>
         </td>
         <td>
-            (@myRect.drawX, @myRect.drawY, @(myRect.drawX + myRect.width), @(myRect.drawY+ myRect.height))
-        </td>
-        <td>
+            (@selectionArea.drawX, @selectionArea.drawY, @(selectionArea.drawX + selectionArea.width), @(selectionArea.drawY+ selectionArea.height))
         </td>
     </tr>
     <tr>
@@ -20,28 +18,44 @@
             <strong>Size</strong>
         </td>
         <td>
-            @myRect.width x @myRect.height
+            @selectionArea.width x @selectionArea.height
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button id="btnSubmit" class="btn btn-primary" @onclick=SubmitSelection disabled="@(selectionSubmitted || !selectionArea.display)">Submit Selection</button>
+            <button id="btnClear" class="btn btn-primary" @onclick=ClearSelection disabled="@(!selectionSubmitted || !selectionArea.display)">Clear Selection</button>
         </td>
         <td>
-            <button id="btnSubmit" class="btn btn-primary" @onclick=SubmitSelection>Submit Selection</button>
+            @lastOperationTimer
         </td>
     </tr>
 </table>
+
 <img id="BaseImage" src="@imageDetails.FileName" width="@imageDetails.Width" height="@imageDetails.Height"
      @onpointerdown=PointerDown
      @onpointerdown:preventDefault
      @onpointerup=PointerUp @onpointerup:preventDefault
      @onpointermove=PointerMove @onpointermove:preventDefault
      style="position:absolute;z-index:1;" />
-@if (myRect.display)
+@if (selectionArea.display)
 {
-<svg width="@imageDetails.Width" height="@imageDetails.Height" style="position: absolute; z-index: 2;"
-     @onpointerdown=PointerDown @onpointerdown:preventDefault
-     @onpointerup=PointerUp @onpointerup:preventDefault
-     @onpointermove=PointerMove @onpointermove:preventDefault>
-    <rect x="@myRect.drawX" y="@myRect.drawY" width="@myRect.width" height="@myRect.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)" />
-</svg>
+    <svg width="@imageDetails.Width" height="@imageDetails.Height" style="position: absolute; z-index: 2;"
+         @onpointerdown=PointerDown @onpointerdown:preventDefault
+         @onpointerup=PointerUp @onpointerup:preventDefault
+         @onpointermove=PointerMove @onpointermove:preventDefault>
+        <rect x="@selectionArea.drawX" y="@selectionArea.drawY" width="@selectionArea.width" height="@selectionArea.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)">
+
+        </rect>
+        @foreach (var result in analysisResult)
+        {
+            <rect x="@(result.X + selectionArea.drawX)" y="@(result.Y + @selectionArea.drawY)" width="7" height="7" rx="2" ry="2" style="stroke-width: 3; stroke: rgb(255 0 75); fill: red;">
+                <title>@result.Message</title>
+            </rect>
+        }
+    </svg>
 }
+
 
 @code{
     [Inject]
@@ -64,25 +78,36 @@
     }
     private offsets imageOffsets { get; set; }
     private ReturnImageDetails imageDetails { get; set; } = new ReturnImageDetails();
-    rect myRect = new rect();
+    private AnalysisResult[] analysisResult { get; set; } = new AnalysisResult[0];
+    rect selectionArea = new rect();
     bool mouseDown = false;
+    bool selectionSubmitted = false;
+    string lastOperationTimer;
 
     protected override async Task OnInitializedAsync()
     {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
         imageDetails = await imageService.GetImageDetails("malaria.png");
+        stopwatch.Stop();
+        lastOperationTimer = $"Image loaded in {stopwatch.ElapsedMilliseconds.ToString()} milliseconds.";
     }
 
     async Task PointerDown(PointerEventArgs e)
     {
+        if (selectionSubmitted)
+            return;
+
+        analysisResult = new AnalysisResult[0];
         imageOffsets = await JSRuntime.InvokeAsync<offsets>("ImageViewer.getOffsets", "BaseImage");
         mouseDown = true;
-        myRect.display = true;
-        myRect.x = e.ClientX - imageOffsets.x;
-        myRect.y = e.ClientY - imageOffsets.y;
-        myRect.drawX = myRect.x;
-        myRect.drawY = myRect.y;
-        myRect.width = 2;
-        myRect.height = 2;
+        selectionArea.display = true;
+        selectionArea.x = e.ClientX - imageOffsets.x;
+        selectionArea.y = e.ClientY - imageOffsets.y;
+        selectionArea.drawX = selectionArea.x;
+        selectionArea.drawY = selectionArea.y;
+        selectionArea.width = 2;
+        selectionArea.height = 2;
         StateHasChanged();
         return;
     }
@@ -95,13 +120,16 @@
 
     Task PointerMove(PointerEventArgs e)
     {
+        if (selectionSubmitted)
+            return Task.CompletedTask;
+
         if (mouseDown)
         {
-            Debug.WriteLine($"ClientX/Y: {e.ClientX}/{e.ClientY} | myRectX/Y: {myRect.x}/{myRect.y} | imageOffsetsX/Y: {imageOffsets.x}/{imageOffsets.y}");
-            myRect.width = e.ClientX > (myRect.x + imageOffsets.x) ? e.ClientX - myRect.x - imageOffsets.x : (myRect.x + imageOffsets.x) - e.ClientX;
-            myRect.height = e.ClientY > (myRect.y + imageOffsets.y) ? e.ClientY - myRect.y - imageOffsets.y : (myRect.y + imageOffsets.y) - e.ClientY;
-            myRect.drawX = Math.Min(myRect.x, (e.ClientX - imageOffsets.x));
-            myRect.drawY = Math.Min(myRect.y, (e.ClientY - imageOffsets.y));
+            Debug.WriteLine($"ClientX/Y: {e.ClientX}/{e.ClientY} | myRectX/Y: {selectionArea.x}/{selectionArea.y} | imageOffsetsX/Y: {imageOffsets.x}/{imageOffsets.y}");
+            selectionArea.width = e.ClientX > (selectionArea.x + imageOffsets.x) ? e.ClientX - selectionArea.x - imageOffsets.x : (selectionArea.x + imageOffsets.x) - e.ClientX;
+            selectionArea.height = e.ClientY > (selectionArea.y + imageOffsets.y) ? e.ClientY - selectionArea.y - imageOffsets.y : (selectionArea.y + imageOffsets.y) - e.ClientY;
+            selectionArea.drawX = Math.Min(selectionArea.x, (e.ClientX - imageOffsets.x));
+            selectionArea.drawY = Math.Min(selectionArea.y, (e.ClientY - imageOffsets.y));
             StateHasChanged();
         }
         return Task.CompletedTask;
@@ -109,14 +137,28 @@
 
     async Task SubmitSelection()
     {
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
         var selection = new ImageSelection
         {
             BaseImagePath = imageDetails.FileName,
-            X = myRect.drawX,
-            Y = myRect.drawY,
-            Width = myRect.width,
-            Height = myRect.height
+            X = selectionArea.drawX,
+            Y = selectionArea.drawY,
+            Width = selectionArea.width,
+            Height = selectionArea.height
         };
-        await imageService.SubmitSelection(selection);
+        var result = await imageService.SubmitSelection(selection);
+        selectionSubmitted = true;
+        analysisResult = result;
+        stopwatch.Stop();
+        lastOperationTimer = $"Last submission took {stopwatch.ElapsedMilliseconds.ToString()} milliseconds.";
+    }
+
+    Task ClearSelection()
+    {
+        selectionArea = new rect();
+        selectionSubmitted = false;
+        analysisResult = new AnalysisResult[0];
+        return Task.CompletedTask;
     }
 }
