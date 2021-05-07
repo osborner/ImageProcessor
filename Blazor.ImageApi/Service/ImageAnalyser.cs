@@ -1,9 +1,7 @@
 ﻿using Blazor.ImageSharedLibrary.Class;
 using Blazor.ImageSharedLibrary.Interface;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Blazor.ImageApi.Service

@@ -1,4 +1,5 @@
 using Blazor.ImageApi.Service;
+using Blazor.ImageSharedLibrary.Class;
 using Blazor.ImageSharedLibrary.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,6 +34,7 @@ namespace Blazor.ImageApi
             services.AddControllers();
             services.AddTransient<IImageProcessor, ImageProcessor>();
             services.AddTransient<IImageAnalyser, ImageAnalyser>();
+            services.AddTransient<IImageRetriever, WebImageRetriever>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

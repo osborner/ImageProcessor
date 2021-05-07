@@ -1,64 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
-using Blazor.ImageSharedLibrary.Class;
+﻿using Blazor.ImageSharedLibrary.Class;
 using Blazor.ImageSharedLibrary.Interface;
+using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Blazor.ImageApi.Service
 {
     public class ImageProcessor : IImageProcessor
     {
-        const string ImageDirectory = "sample-data";
+        const string ImageDirectory = "sample-data/";
+        const string baseUrl = "https://localhost:44382/";
         private readonly IImageAnalyser _imageAnalyser;
+        private readonly IImageRetriever _imageRetriever;
 
-        public ImageProcessor(IImageAnalyser imageAnalyser)
+        public ImageProcessor(IImageAnalyser imageAnalyser, IImageRetriever imageRetriever)
         {
             _imageAnalyser = imageAnalyser;
+            _imageRetriever = imageRetriever;
         }
         public async Task<ReturnImageDetails> GetImageDetails(string fileName)
         {
-            var stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
-
             // Hardcoded URL as an example, change this in the real world
-            var fileLocation = Path.Combine("https://localhost:44382/sample-data/", fileName);
-            Image image;
-            using (WebClient client = new WebClient())
-            {
-                Stream stream = client.OpenRead(new Uri(fileLocation));
-                image = Image.FromStream(stream);
-                if (image == null)
-                    throw new FileNotFoundException("Image not found.");
-            }
+            var fileLocation = Path.Combine(baseUrl, ImageDirectory, fileName);
+            var image = await _imageRetriever.RetrieveImage(fileLocation);
 
-            stopwatch.Stop();
             return new ReturnImageDetails
             {
                 FileName = fileLocation,
                 Width = image.Width,
-                Height = image.Height,
-                TimeToProcess = stopwatch.Elapsed
+                Height = image.Height
             };
         }
 
         public async Task<AnalysisResult[]> SubmitSelection(ImageSelection selection)
         {
             // Proof of concept - receives selection and extracts section of base image.
-            Image image;
-            using (WebClient client = new WebClient())
-            {
-                Stream stream = client.OpenRead(new Uri(selection.BaseImagePath));
-                image = Image.FromStream(stream);
-                if (image == null)
-                    throw new FileNotFoundException("Image not found.");
-            }
+            var image = await _imageRetriever.RetrieveImage(selection.BaseImagePath);
             Bitmap baseBmp = new Bitmap(image);
             RectangleF cropRegion = new RectangleF((float)selection.X, (float)selection.Y, (float)selection.Width, (float)selection.Height);
             var outputBitmap = new Bitmap((int)selection.Width, (int)selection.Height);
