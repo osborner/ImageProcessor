@@ -10,7 +10,7 @@
             <strong>Coords</strong>
         </td>
         <td>
-            (@selectionArea.drawX, @selectionArea.drawY, @(selectionArea.drawX + selectionArea.width), @(selectionArea.drawY+ selectionArea.height))
+            (@selectionArea.drawX.ToString("0.###"), @selectionArea.drawY.ToString("0.###"), @((selectionArea.drawX + selectionArea.width).ToString("0.###")), @((selectionArea.drawY+ selectionArea.height).ToString("0.###")))
         </td>
     </tr>
     <tr>
@@ -18,7 +18,7 @@
             <strong>Size</strong>
         </td>
         <td>
-            @selectionArea.width x @selectionArea.height
+            @selectionArea.width.ToString("0.###") x @selectionArea.height.ToString("0.###")
         </td>
     </tr>
     <tr>
@@ -31,35 +31,44 @@
         </td>
     </tr>
 </table>
-
-<img id="BaseImage" src="@imageDetails.FileName" width="@imageDetails.Width" height="@imageDetails.Height"
-     @onpointerdown=PointerDown
-     @onpointerdown:preventDefault
-     @onpointerup=PointerUp @onpointerup:preventDefault
-     @onpointermove=PointerMove @onpointermove:preventDefault
-     style="position:absolute;z-index:1;" />
-@if (selectionArea.display)
+@if (loadFailed)
 {
-    <svg width="@imageDetails.Width" height="@imageDetails.Height" style="position: absolute; z-index: 2;"
-         @onpointerdown=PointerDown @onpointerdown:preventDefault
+    <h3>An error occurred when loading the image.</h3>
+}
+else
+{
+    <img id="BaseImage" src="@imageDetails.FileName" width="@imageDetails.Width" height="@imageDetails.Height"
+         @onpointerdown=PointerDown
+         @onpointerdown:preventDefault
          @onpointerup=PointerUp @onpointerup:preventDefault
-         @onpointermove=PointerMove @onpointermove:preventDefault>
-        <rect x="@selectionArea.drawX" y="@selectionArea.drawY" width="@selectionArea.width" height="@selectionArea.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)">
+         @onpointermove=PointerMove @onpointermove:preventDefault
+         style="position:absolute;z-index:1;" />
+    @if (selectionArea.display)
+    {
+        <svg width="@imageDetails.Width" height="@imageDetails.Height" style="position: absolute; z-index: 2;"
+             @onpointerdown=PointerDown @onpointerdown:preventDefault
+             @onpointerup=PointerUp @onpointerup:preventDefault
+             @onpointermove=PointerMove @onpointermove:preventDefault>
+            <rect x="@selectionArea.drawX" y="@selectionArea.drawY" width="@selectionArea.width" height="@selectionArea.height" style="fill:transparent;stroke-width:3;stroke:rgb(237, 255, 0)">
 
-        </rect>
-        @foreach (var result in analysisResult)
-        {
-            <rect x="@(result.X + selectionArea.drawX)" y="@(result.Y + @selectionArea.drawY)" width="7" height="7" rx="2" ry="2" style="stroke-width: 3; stroke: rgb(255 0 75); fill: red;">
-                <title>@result.Message</title>
             </rect>
-        }
-    </svg>
+            @foreach (var result in analysisResult)
+            {
+                <rect x="@(result.X + selectionArea.drawX)" y="@(result.Y + @selectionArea.drawY)" width="7" height="7" rx="2" ry="2" style="stroke-width: 3; stroke: rgb(255 0 75); fill: red;">
+                    <title>@result.Message</title>
+                </rect>
+            }
+        </svg>
+    }
 }
 
 
 @code{
     [Inject]
     private IImageService imageService { get; set; }
+
+    [CascadingParameter]
+    public Error Error { get; set; }
 
     public class rect
     {
@@ -83,12 +92,21 @@
     bool mouseDown = false;
     bool selectionSubmitted = false;
     string lastOperationTimer;
+    bool loadFailed = false;
 
     protected override async Task OnInitializedAsync()
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        imageDetails = await imageService.GetImageDetails("malaria.png");
+        try
+        {
+            imageDetails = await imageService.GetImageDetails("malaria.png");
+        }
+        catch (Exception ex)
+        {
+            loadFailed = true;
+            Error.ProcessError(ex);
+        }
         stopwatch.Stop();
         lastOperationTimer = $"Image loaded in {stopwatch.ElapsedMilliseconds.ToString()} milliseconds.";
     }
@@ -139,17 +157,25 @@
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        var selection = new ImageSelection
+        try
         {
-            BaseImagePath = imageDetails.FileName,
-            X = selectionArea.drawX,
-            Y = selectionArea.drawY,
-            Width = selectionArea.width,
-            Height = selectionArea.height
-        };
-        var result = await imageService.SubmitSelection(selection);
-        selectionSubmitted = true;
-        analysisResult = result;
+            var selection = new ImageSelection
+            {
+                BaseImagePath = imageDetails.FileName,
+                X = selectionArea.drawX,
+                Y = selectionArea.drawY,
+                Width = selectionArea.width,
+                Height = selectionArea.height
+            };
+            var result = await imageService.SubmitSelection(selection);
+            selectionSubmitted = true;
+            analysisResult = result;
+        }
+        catch (Exception ex)
+        {
+            ClearSelection();
+            Error.ProcessError(ex);
+        }
         stopwatch.Stop();
         lastOperationTimer = $"Last submission took {stopwatch.ElapsedMilliseconds.ToString()} milliseconds.";
     }

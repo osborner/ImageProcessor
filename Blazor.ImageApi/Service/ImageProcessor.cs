@@ -26,6 +26,8 @@ namespace Blazor.ImageApi.Service
         {
             var stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
+
+            // Hardcoded URL as an example, change this in the real world
             var fileLocation = Path.Combine("https://localhost:44382/sample-data/", fileName);
             Image image;
             using (WebClient client = new WebClient())
